@@ -3,18 +3,36 @@
   hosts: all
   gather_facts: true
   tasks:
-    - name: Mostrar información de la CPU
+    - name: Obtener informacion de la CPU
+      command: lscpu
+      register: cpu_info
+      ignore_errors: yes
+
+    - name: Mostrar informacion de la CPU
       debug:
         msg: |
           Detalles de la CPU:
-          - Núcleos: {{ ansible_processor_cores }}
-          - Modelo: {{ ansible_processor[0] }}
-          - Frecuencia: {{ ansible_processor speed[0] }} MHz
+          {{ cpu_info.stdout_lines }}
+      when: cpu_info.rc == 0  # Solo mostrar si el comando se ejecutó correctamente
 
-    - name: Mostrar información de la memoria
+    - name: Manejar errores de CPU
+      debug:
+        msg: "Error al obtener informacion de la CPU: {{ cpu_info.stderr }}"
+      when: cpu_info.rc != 0  # Mostrar el error si el comando falló
+
+    - name: Obtener informacion de la memoria
+      command: free -m
+      register: memory_info
+      ignore_errors: yes
+
+    - name: Mostrar informacion de la memoria
       debug:
         msg: |
           Detalles de la Memoria:
-          - Total de Memoria: {{ ansible_memtotal_mb }} MB
-          - Memoria Libre: {{ ansible_memfree_mb }} MB
-          - Memoria Usada: {{ ansible_memused_mb }} MB
+          {{ memory_info.stdout_lines }}
+      when: memory_info.rc == 0  # Solo mostrar si el comando se ejecutó correctamente
+
+    - name: Manejar errores de memoria
+      debug:
+        msg: "Error al obtener información de la memoria: {{ memory_info.stderr }}"
+      when: memory_info.rc != 0  # Mostrar el error si el comando falló
