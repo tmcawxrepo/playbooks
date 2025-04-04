@@ -1,38 +1,21 @@
 ---
 - name: Verificar CPU y Memoria en Rocky Linux 9.5
   hosts: all
-  gather_facts: true
+  gather_facts: false  # No se necesitan facts ya que usaremos comandos de shell
   tasks:
-    - name: Obtener informacion de la CPU
-      command: lscpu
+    - name: Obtener información de la CPU
+      shell: lscpu
       register: cpu_info
       ignore_errors: yes
 
-    - name: Mostrar informacion de la CPU
+    - name: Mostrar información de la CPU
       debug:
         msg: |
           Detalles de la CPU:
-          {{ cpu_info.stdout_lines }}
+          {{ cpu_info.stdout }}
       when: cpu_info.rc == 0  # Solo mostrar si el comando se ejecutó correctamente
 
     - name: Manejar errores de CPU
       debug:
-        msg: "Error al obtener informacion de la CPU: {{ cpu_info.stderr }}"
-      when: cpu_info.rc != 0  # Mostrar el error si el comando falló
-
-    - name: Obtener informacion de la memoria
-      command: free -m
-      register: memory_info
-      ignore_errors: yes
-
-    - name: Mostrar informacion de la memoria
-      debug:
-        msg: |
-          Detalles de la Memoria:
-          {{ memory_info.stdout_lines }}
-      when: memory_info.rc == 0  # Solo mostrar si el comando se ejecutó correctamente
-
-    - name: Manejar errores de memoria
-      debug:
-        msg: "Error al obtener información de la memoria: {{ memory_info.stderr }}"
-      when: memory_info.rc != 0  # Mostrar el error si el comando falló
+        msg: "Error al obtener información de la CPU: {{ cpu_info.stderr }}"
+      when: cpu_info.rc != 0  # Mostrar el error si el comando falló 0  # Mostrar el error si el comando falló
