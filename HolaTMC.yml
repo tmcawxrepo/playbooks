@@ -1,0 +1,6 @@
+- name: Hola TMC
+  hosts: all
+  tasks:
+    - name: HOLA A TODOS
+      debug:
+        msg: "HOLA TMC ... YA ESTOY LISTO!"
