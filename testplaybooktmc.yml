@@ -1,0 +1,24 @@
+---
+- name: Inventario de CPU y Memoria de localhost
+  hosts: localhost
+  gather_facts: true
+  tasks:
+    - name: Obtener información de la CPU
+      setup:
+        gather_subset:
+          - hardware
+      register: cpu_info
+
+    - name: Mostrar información de la CPU
+      debug:
+        var: cpu_info.ansible_facts.processor_cores
+    
+    - name: Obtener información de la memoria
+      setup:
+        gather_subset:
+          - memory
+      register: memory_info
+
+    - name: Mostrar información de la memoria
+      debug:
+        var: memory_info.ansible_facts
