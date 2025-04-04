@@ -1,0 +1,20 @@
+---
+- name: Verificar CPU y Memoria en Rocky Linux 9.5
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Mostrar información de la CPU
+      debug:
+        msg: |
+          Detalles de la CPU:
+          - Núcleos: {{ ansible_processor_cores }}
+          - Modelo: {{ ansible_processor[0] }}
+          - Frecuencia: {{ ansible_processor speed[0] }} MHz
+
+    - name: Mostrar información de la memoria
+      debug:
+        msg: |
+          Detalles de la Memoria:
+          - Total de Memoria: {{ ansible_memtotal_mb }} MB
+          - Memoria Libre: {{ ansible_memfree_mb }} MB
+          - Memoria Usada: {{ ansible_memused_mb }} MB
