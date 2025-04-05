@@ -1,14 +1,12 @@
 ---
 - name: Obtener la IP del servidor
-  hosts: all
-  gather_facts: true
+  hosts: all  # Se ejecutará en todos los hosts del inventario
+  gather_facts: false  # No se necesitan facts para este ejemplo
   tasks:
     - name: Ejecutar comando para obtener la IP
-      shell: hostname -I  
-      register: ip_output  
-      ignore_errors: yes  
+      command: hostname -I  # Comando para obtener la dirección IP
+      register: ip_output  # Guardar la salida del comando
 
     - name: Mostrar la salida del comando
       debug:
-        msg: "La dirección IP del servidor es: {{ ip_output.stdout }}"
-      
+        msg: "La dirección IP del servidor es: {{ ip_output.stdout }}"  # Mostrar la IP 
