@@ -1,6 +1,7 @@
 ---
 - name: Obtener la IP del servidor
-  hosts: all  
+  hosts: all
+  gather_facts: true
   tasks:
     - name: Ejecutar comando para obtener la IP
       shell: hostname -I  
