@@ -1,19 +1,19 @@
 ---
 - name: Obtener la IP del servidor
   hosts: all
-  gather_facts: false
+  gather_facts: true
   tasks:
     - name: Ejecutar comando para obtener la IP
       shell: hostname -I  
       register: ip_output  
-      ignore_errors: yes  # Esto permitirá continuar en caso de error
+      ignore_errors: yes  
 
     - name: Mostrar la salida del comando
       debug:
         msg: "La dirección IP del servidor es: {{ ip_output.stdout }}"  
-      when: ip_output.rc == 0  # Solo mostrar si el comando se ejecutó correctamente
+      
 
     - name: Manejar errores
       debug:
         msg: "Error al ejecutar el comando para obtener la IP: {{ ip_output.stderr }}"
-      when: ip_output.rc != 0
+      
