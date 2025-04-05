@@ -4,5 +4,5 @@
   gather_facts: false  # No se necesitan facts para este ejemplo
   tasks:
     - name: Ejecutar comando para obtener la IP
-      command: hostname -I  # Comando para obtener la dirección IP
+      command: /bin/hostname -I  # Comando para obtener la dirección IP
       register: ip_output  # Guardar la salida del comando
