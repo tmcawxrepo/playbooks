@@ -10,10 +10,5 @@
 
     - name: Mostrar la salida del comando
       debug:
-        msg: "La dirección IP del servidor es: {{ ip_output.stdout }}"  
-      
-
-    - name: Manejar errores
-      debug:
-        msg: "Error al ejecutar el comando para obtener la IP: {{ ip_output.stderr }}"
+        msg: "La dirección IP del servidor es: {{ ip_output.stdout }}"
       
