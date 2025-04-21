@@ -1,0 +1,12 @@
+# TMCONSULTING-CREACION DE VLAN
+---
+- name: Configure VLAN on Cisco Switches
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Configure VLAN 100 on switch
+      ios_config:
+        lines:
+          - vlan 100
+          - name Marketing
+        save_when: modified
