@@ -1,12 +1,40 @@
-# TMCONSULTING-CREACION DE VLAN
 ---
-- name: Configurar VLAN SOLICTADA DEMO TMCONSULTING
-  hosts: all
-  gather_facts: no
+- name: Configurar VLAN en Switch Cisco
+  hosts: cisco_switches
+  gather_facts: false
+  vars_prompt:
+    - name: "vlan_id"
+      prompt: "Ingrese el ID de la VLAN"
+      private: no
+    - name: "vlan_name"
+      prompt: "Ingrese el nombre de la VLAN"
+      private: no
+
   tasks:
-    -name: Configurar VLAN 100 switches catalyst TMCONSULTING DEMO
+    - name: Obtener información sobre VLANs existentes
       ios_config:
         lines:
-          - vlan 105
-          - name tmdemo
-        save_when: modified
+          - "show vlan"
+      register: vlan_output
+
+    - name: Verificar si la VLAN ya existe
+      set_fact:
+        vlan_exists: "{{ vlan_id in vlan_output.stdout }}"
+
+    - name: Crear VLAN si no existe
+      ios_config:
+        lines:
+          - "vlan {{ vlan_id }}"
+          - "name {{ vlan_name }}"
+      when: not vlan_exists
+      register: vlan_creation_result
+
+    - name: Mostrar mensaje de éxito
+      debug:
+        msg: "La VLAN {{ vlan_id }} con nombre '{{ vlan_name }}' ha sido creada."
+      when: vlan_creation_result.changed
+
+    - name: Mostrar mensaje de VLAN existente
+      debug:
+        msg: "La VLAN {{ vlan_id }} ya existe. No se realizó ninguna acción."
+      when: vlan_exists
