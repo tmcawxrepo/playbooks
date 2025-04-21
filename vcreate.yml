@@ -1,6 +1,6 @@
 ---
 - name: Configurar VLAN en Switch Cisco
-  hosts: cisco_switches
+  hosts: all
   gather_facts: false
   vars_prompt:
     - name: "vlan_id"
