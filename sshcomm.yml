@@ -1,0 +1,10 @@
+---
+    - hosts: all
+      become: true # Optional, for privilege escalation
+      tasks:
+        - name: Check OS version
+          shell: "uname -a"
+          register: os_version_result # Optional, to store the result
+        - name: Print the result
+          debug:
+            msg: "{{ os_version_result.stdout }}"
