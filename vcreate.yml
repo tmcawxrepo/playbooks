@@ -12,20 +12,17 @@
 
   tasks:
     - name: Validar si la VLAN existe
-      shell: |
-        ssh -o StrictHostKeyChecking=no {{ ansible_ssh_user }}@{{ inventory_hostname }} "show vlan | include VLAN {{ vlan_id }}"
+      shell: "show vlan | include VLAN {{ vlan_id }}"
       register: vlan_check
       ignore_errors: yes
 
     - name: Crear VLAN si no existe
       shell: |
-        ssh -o StrictHostKeyChecking=no {{ ansible_ssh_user }}@{{ inventory_hostname }} <<EOF
-        configure terminal
-        vlan {{ vlan_id }}
-        name {{ vlan_name }}
-        exit
-        show vlan | include VLAN {{ vlan_id }}
-        EOF
+      configure terminal
+      vlan {{ vlan_id }}
+      name {{ vlan_name }}
+      exit
+      show vlan | include VLAN {{ vlan_id }}
       when: vlan_check.stdout == ""
       register: vlan_creation_result
 
