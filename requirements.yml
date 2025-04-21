@@ -1,4 +1,4 @@
 ---
     collections:
-  #    - name: cisco.ios
-      - name: cisco.catalystcenter
+     - name: cisco.ios
+     
