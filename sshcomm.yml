@@ -1,10 +1,17 @@
 ---
-    - hosts: all
-      become: true # Optional, for privilege escalation
-      tasks:
-        - name: Check OS version
-          shell: "uname -a"
-          register: os_version_result # Optional, to store the result
-        - name: Print the result
-          debug:
-            msg: "{{ os_version_result.stdout }}"
+- name: Ejecutar múltiples comandos en shell
+  hosts: all        # Esto se aplicará a todos los hosts definidos en tu inventario
+  gather_facts: false
+  tasks:
+    - name: Ejecutar varios comandos en el shell
+      shell: |
+        echo "Comenzando la ejecución de comandos..."
+        date  # Obtener la fecha actual
+        free -m  # Mostrar uso de memoria en MB
+        df -h  # Mostrar uso del sistema de archivos
+        echo "Ejecución completa."
+      register: command_output
+
+    - name: Mostrar salida de los comandos
+      debug:
+        msg: "{{ command_output.stdout_lines }}"
