@@ -1,42 +1,43 @@
 ---
 - name: Configurar VLAN en Switch Cisco mediante SSH
-  hosts: all  # Se aplicará a todos los hosts definidos en el inventario
+  hosts: all  # Se aplicará a todos los hosts en el inventario
   gather_facts: false
   vars_prompt:
     - name: "vlan_id"
-      prompt: "Ingrese el ID de la VLAN"
+      prompt: "Ingrese el ID de la VLAN (por ejemplo 10)"
       private: no
     - name: "vlan_name"
-      prompt: "Ingrese el nombre de la VLAN"
+      prompt: "Ingrese el nombre de la VLAN (por ejemplo RED)"
       private: no
 
   tasks:
-    - name: Verificar si la VLAN existe
+    - name: Validar si la VLAN existe
       shell: |
-        sshpass -p "{{ ansible_ssh_pass }}" ssh -o StrictHostKeyChecking=no {{ ansible_ssh_user }}@{{ inventory_hostname }} "show vlan brief"
-      register: vlan_output
+        ssh -o StrictHostKeyChecking=no {{ ansible_ssh_user }}@{{ inventory_hostname }} "show vlan | include VLAN {{ vlan_id }}"
+      register: vlan_check
       ignore_errors: yes
-
-    - name: Comprobar si la VLAN ya existe
-      set_fact:
-        vlan_exists: "{{ vlan_id in vlan_output.stdout }}"
 
     - name: Crear VLAN si no existe
       shell: |
-        sshpass -p "{{ ansible_ssh_pass }}" ssh -o StrictHostKeyChecking=no {{ ansible_ssh_user }}@{{ inventory_hostname }} "configure terminal; vlan {{ vlan_id }}; name {{ vlan_name }}; exit"
-      when: not vlan_exists
+        ssh -o StrictHostKeyChecking=no {{ ansible_ssh_user }}@{{ inventory_hostname }} <<EOF
+        configure terminal
+        vlan {{ vlan_id }}
+        name {{ vlan_name }}
+        exit
+        show vlan | include VLAN {{ vlan_id }}
+        EOF
+      when: vlan_check.stdout == ""
       register: vlan_creation_result
-      ignore_errors: yes
 
-    - name: Mostrar mensaje de éxito de creación de VLAN
+    - name: Mostrar mensaje de éxito al crear VLAN
       debug:
         msg: "La VLAN {{ vlan_id }} con nombre '{{ vlan_name }}' ha sido creada."
       when: vlan_creation_result.rc == 0
 
-    - name: Mostrar mensaje si la VLAN ya existe
+    - name: Mostrar mensaje de VLAN existente
       debug:
         msg: "La VLAN {{ vlan_id }} ya existe. No se realizó ninguna acción."
-      when: vlan_exists
+      when: vlan_check.stdout != ""
 
     - name: Mostrar error si falla la creación
       debug:
