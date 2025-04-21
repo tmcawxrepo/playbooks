@@ -1,10 +1,10 @@
 # TMCONSULTING-CREACION DE VLAN
 ---
-- name: Configurar VLAN
+- name: Configurar VLAN SOLICTADA DEMO TMCONSULTING
   hosts: all
   gather_facts: no
   tasks:
-    - name: Configurar VLAN 100 switches catalyst
+    - name: Configurar VLAN 100 switches catalyst TMCONSULTING DEMO
       ios_config:
         lines:
           - vlan 105
