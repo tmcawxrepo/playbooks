@@ -4,7 +4,7 @@
   hosts: all
   gather_facts: no
   tasks:
-    - name: Configurar VLAN 100 switches catalyst TMCONSULTING DEMO
+    -name: Configurar VLAN 100 switches catalyst TMCONSULTING DEMO
       ios_config:
         lines:
           - vlan 105
