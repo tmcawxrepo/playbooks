@@ -5,6 +5,21 @@ import sys
 from jinja2 import Template
 import datetime
 
+def read_config_from_file(config_file):
+    """Lee la configuración desde un archivo."""
+    try:
+        print(f"Leyendo configuración desde el archivo: {config_file}")
+        config = {}
+        with open(config_file, 'r') as f:
+            for line in f:
+                key, value = line.strip().split('=')
+                config[key.strip()] = value.strip()
+        print(f"Configuración leída: {config}")
+        return config
+    except Exception as e:
+        print(f"Error al leer el archivo de configuración: {e}")
+        sys.exit(1)
+
 def read_credentials_from_file(credentials_file):
     """Lee el nombre de usuario y la contraseña desde un archivo."""
     try:
@@ -86,21 +101,27 @@ def generate_html_report(hostname, vlan_id, vlan_name, creation_success, creatio
 def main():
     """Función principal para crear VLANs."""
     parser = argparse.ArgumentParser(description="Crea una VLAN en un switch Cisco Catalyst via Telnet.")
-    parser.add_argument("--host", required=True, help="Dirección IP del switch.")
-    parser.add_argument("--credentials_file", required=True, help="Archivo de texto con usuario y contraseña (una por línea).")
-    parser.add_argument("--vlan_id", required=True, type=int, help="ID de la VLAN a crear.")
-    parser.add_argument("--vlan_name", required=True, help="Nombre de la VLAN a crear.")
-    parser.add_argument("--enable_secret", required=False, help="Contraseña para el modo enable (si es necesario).")
-    parser.add_argument("--report_file", required=True, help="Nombre del archivo HTML para el reporte.")
+    parser.add_argument("--config_file", required=True, help="Archivo de configuración con los parámetros.")
 
     args = parser.parse_args()
 
-    try:
-        # Leer el nombre de usuario y la contraseña desde el archivo
-        username, password = read_credentials_from_file(args.credentials_file)
+    # Leer la configuración desde el archivo
+    config = read_config_from_file(args.config_file)
 
-        print(f"Conectando a {args.host} via Telnet...")
-        tn = telnetlib.Telnet(args.host)
+    try:
+        # Obtener los parámetros desde la configuración
+        host = config['host']
+        credentials_file = config['credentials_file']
+        vlan_id = int(config['vlan_id'])
+        vlan_name = config['vlan_name']
+        report_file = config['report_file']
+        enable_secret = config.get('enable_secret', None)  # Opcional
+
+        # Leer el nombre de usuario y la contraseña desde el archivo de credenciales
+        username, password = read_credentials_from_file(credentials_file)
+
+        print(f"Conectando a {host} via Telnet...")
+        tn = telnetlib.Telnet(host)
 
         tn.read_until(b"Username: ")
         print("Enviando nombre de usuario...")
@@ -113,29 +134,29 @@ def main():
         time.sleep(0.5)
 
         # Si se proporciona un enable secret, intentar entrar en modo enable
-        if args.enable_secret:
+        if enable_secret:
             print("Enviando comando enable...")
             tn.write(b"enable\n")
             time.sleep(0.5)
             tn.read_until(b"Password: ")
-            tn.write(args.enable_secret.encode('ascii') + b"\n")
+            tn.write(enable_secret.encode('ascii') + b"\n")
             time.sleep(0.5)
 
-        creation_success, creation_output = create_vlan(tn, args.vlan_id, args.vlan_name)
+        creation_success, creation_output = create_vlan(tn, vlan_id, vlan_name)
 
         # Generar el reporte HTML
         html_report = generate_html_report(
-            args.host,
-            args.vlan_id,
-            args.vlan_name,
+            host,
+            vlan_id,
+            vlan_name,
             creation_success,
             creation_output
         )
 
-        with open(args.report_file, "w") as f:
+        with open(report_file, "w") as f:
             f.write(html_report)
 
-        print(f"Reporte HTML generado en {args.report_file}")
+        print(f"Reporte HTML generado en {report_file}")
         sys.exit(0 if creation_success else 1)  # Salir con código 0 si la creación fue exitosa, 1 si falló
 
     except Exception as e:
