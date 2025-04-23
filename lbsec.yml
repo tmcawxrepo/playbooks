@@ -1,6 +1,6 @@
 ---
 - name: Evaluate website security
-  hosts: localhost
+  hosts: all
   tasks:
     - name: Copy Python script to host
       copy:
