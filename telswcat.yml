@@ -6,11 +6,13 @@
   vars:
     # Define las variables aquí o en tu inventario
     switch_host: "192.168.1.1"
-    switch_username: "tu_usuario"
-    switch_password: "tu_contraseña"
+    credentials_file: "/tmp/credentials.txt"  # Asegúrate de que este archivo exista en el host remoto
+    switch_username: "tu_usuario"  # No se usa directamente en el script, pero puede ser útil para otros propósitos
+    switch_password: "tu_contraseña"  # No se usa directamente en el script, pero puede ser útil para otros propósitos
     vlan_id: 20
     vlan_name: "Docentes"
     enable_secret: "tu_enable_secret"  # Opcional
+    report_file: "/tmp/vlan_report.html"
 
   tasks:
     - name: Copiar script Python al switch
@@ -19,11 +21,16 @@
         dest: /tmp/create_vlan_telnet.py
         mode: '0755'
 
+    - name: Crear archivo de credenciales en el switch
+      copy:
+        content: |
+          {{ switch_username }}
+          {{ switch_password }}
+        dest: "{{ credentials_file }}"
+        mode: '0600'  # Solo lectura y escritura para el propietario
+
     - name: Ejecutar script Python para crear VLAN
       command:
-        cmd: "python3 /tmp/create_vlan_telnet.py --host {{ switch_host }} --username {{ switch_username }} --password {{ switch_password }} --vlan_id {{ vlan_id }} --vlan_name {{ vlan_name }} --enable_secret {{ enable_secret | default('') }}"
-      register: vlan_result
+        cmd: "python3 /tmp/create_vlan_telnet.py --host {{ switch_host }} --credentials_file {{ credentials_file }} --vlan_id {{ vlan_id }} --vlan_name {{ vlan_name }}
 
-    - name: Mostrar resultado
-      debug:
-        var: vlan_result.stdout
+
