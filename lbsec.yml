@@ -1,69 +1,90 @@
----
-- name: Evaluate website security
-  hosts: all
-  tasks:
-    - name: Copy Python script to host
-      copy:
-        content: |
 import ssl
 import socket
 import requests
+from jinja2 import Template
+import datetime
 
-def check_certificate(hostname):
+
+def check_certificate(hostname, port):
     try:
-        ctx = ssl.create_default_context()
-        with ctx.wrap_socket(socket.socket(), server_hostname=hostname) as s:
-            s.connect((hostname, 443))
+        context = ssl.create_default_context()
+        with context.wrap_socket(socket.socket(), server_hostname=hostname) as s:
+            s.connect((hostname, port))
             cert = s.getpeercert()
             return cert
     except Exception as e:
         return f"Error checking certificate: {e}"
 
-def check_open_port(hostname, port):
-    try:
-        with socket.create_connection((hostname, port), timeout=5):
-            return True
-    except Exception:
-        return False
 
-def check_headers(url):
+def check_hsts(url):
     try:
         response = requests.get(url)
         hsts = response.headers.get('Strict-Transport-Security', None)
-        csp = response.headers.get('Content-Security-Policy', None)
-        return {'HSTS': hsts is not None, 'CSP': csp is not None}
+        return hsts is not None, hsts
     except Exception as e:
-        return f"Error checking headers: {e}"
+        return False, str(e)
 
-def evaluate_website_security(hostname, url):
-    certificate = check_certificate(hostname)
-    port_443_open = check_open_port(hostname, 443)
-    headers = check_headers(url)
-    
-    return {
-        "Certificado": certificate,
-        "Puerto": port_443_open,
-        "Headers": headers,
+
+def check_csp(url):
+    try:
+        response = requests.get(url)
+        csp = response.headers.get('Content-Security-Policy', None)
+        return csp is not None, csp
+    except Exception as e:
+        return False, str(e)
+
+
+def generate_html_report(hostname, report):
+    template = Template("""
+    <html>
+        <head>
+            <title>Security Evaluation Report</title>
+            <style>
+                body { font-family: Arial, sans-serif; }
+                h1 { color: #333; }
+                pre { background: #f4f4f4; padding: 10px; }
+                .status { font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <h1>Security Evaluation Report for {{ hostname }}</h1>
+            <h2>Certificate Details:</h2>
+            <pre>{{ report['Certificate'] }}</pre>
+            <h2>HSTS Status:</h2>
+            <p class="status">{{ 'Present' if report['HSTS'][0] else 'Missing' }}</p>
+            <p>{{ report['HSTS'][1] }}</p>
+            <h2>CSP Status:</h2>
+            <p class="status">{{ 'Present' if report['CSP'][0] else 'Missing' }}</p>
+            <p>{{ report['CSP'][1] }}</p>
+            <footer>
+                <p>Report generated on {{ timestamp }}</p>
+            </footer>
+        </body>
+    </html>
+    """)
+    return template.render(hostname=hostname, report=report, timestamp=datetime.datetime.now())
+
+
+def evaluate_website_security(hostname, port):
+    url = f"https://{hostname}"
+    certificate = check_certificate(hostname, port)
+    hsts_result = check_hsts(url)
+    csp_result = check_csp(url)
+
+    report = {
+        "Certificate": certificate,
+        "HSTS": hsts_result,
+        "CSP": csp_result,
     }
+    return generate_html_report(hostname, report)
 
-# Usage example:
-hostname = "appscvgwsfcipred.claro.com.co/IdClaro-web/"
-url = f"https://{hostname}"
-security_report = evaluate_website_security(hostname, url)
-print(security_report)  
-        dest: /tmp/evaluate_security.py
-        mode: '0755'
 
-    - name: Execute Python script
-      command: python3 /tmp/evaluate_security.py
-      register: script_output
+if __name__ == "__main__":
+    hostname = "example.com"  # Cambia esto por el sitio que deseas evaluar
+    port = 443
+    html_report = evaluate_website_security(hostname, port)
 
-    - name: Fetch the HTML report
-      fetch:
-        src: /tmp/security_report.html
-        dest: ./security_report.html
-        flat: yes
+    with open("security_report.html", "w") as f:
+        f.write(html_report)
 
-    - name: Display message
-      debug:
-        msg: "Security report generated and fetched: security_report.html"
+    print("Security report saved as security_report.html")
