@@ -41,13 +41,13 @@ def evaluate_website_security(hostname, url):
     headers = check_headers(url)
     
     return {
-        "Certificate": certificate,
-        "Port 443 Open": port_443_open,
+        "Certificado": certificate,
+        "Puerto": port_443_open,
         "Headers": headers,
     }
 
 # Usage example:
-hostname = "example.com"
+hostname = "appscvgwsfcipred.claro.com.co/IdClaro-web/"
 url = f"https://{hostname}"
 security_report = evaluate_website_security(hostname, url)
 print(security_report)  
