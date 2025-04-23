@@ -1,0 +1,29 @@
+---
+- name: Crear VLAN en switch Cisco via Telnet
+  hosts: all
+  gather_facts: false
+
+  vars:
+    # Define las variables aquí o en tu inventario
+    switch_host: "192.168.1.1"
+    switch_username: "tu_usuario"
+    switch_password: "tu_contraseña"
+    vlan_id: 20
+    vlan_name: "Docentes"
+    enable_secret: "tu_enable_secret"  # Opcional
+
+  tasks:
+    - name: Copiar script Python al switch
+      copy:
+        src: create_vlan_telnet.py  # Reemplaza con el nombre de tu script
+        dest: /tmp/create_vlan_telnet.py
+        mode: '0755'
+
+    - name: Ejecutar script Python para crear VLAN
+      command:
+        cmd: "python3 /tmp/create_vlan_telnet.py --host {{ switch_host }} --username {{ switch_username }} --password {{ switch_password }} --vlan_id {{ vlan_id }} --vlan_name {{ vlan_name }} --enable_secret {{ enable_secret | default('') }}"
+      register: vlan_result
+
+    - name: Mostrar resultado
+      debug:
+        var: vlan_result.stdout
