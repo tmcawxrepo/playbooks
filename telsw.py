@@ -5,18 +5,20 @@ import sys
 from jinja2 import Template
 import datetime
 
-def check_vlan_exists(tn, vlan_id):
-    """Verifica si una VLAN existe en el switch."""
-    print(f"Verificando si la VLAN {vlan_id} existe...")
-    tn.write(b"show vlan id " + str(vlan_id).encode('ascii') + b"\n")
-    time.sleep(1)  # Espera a que se complete el comando
-    output = tn.read_very_eager().decode('ascii')
-    exists = "VLAN not found" not in output
-    if exists:
-        print(f"VLAN {vlan_id} encontrada.")
-    else:
-        print(f"VLAN {vlan_id} no encontrada.")
-    return exists, output
+def read_credentials_from_file(credentials_file):
+    """Lee el nombre de usuario y la contraseña desde un archivo."""
+    try:
+        print(f"Leyendo credenciales desde el archivo: {credentials_file}")
+        with open(credentials_file, 'r') as f:
+            lines = f.readlines()
+            username = lines[0].strip()
+            password = lines[1].strip()
+            print(f"Usuario leído: {username}")
+            print(f"Contraseña leída (oculta por seguridad)")  # No mostrar la contraseña
+            return username, password
+    except Exception as e:
+        print(f"Error al leer el archivo de credenciales: {e}")
+        sys.exit(1)
 
 def create_vlan(tn, vlan_id, vlan_name):
     """Crea una VLAN en el switch."""
@@ -43,7 +45,7 @@ def create_vlan(tn, vlan_id, vlan_name):
         print(f"Error al crear la VLAN: {e}")
         return False, str(e)
 
-def generate_html_report(hostname, vlan_id, vlan_name, vlan_exists, vlan_output, creation_success, creation_output):
+def generate_html_report(hostname, vlan_id, vlan_name, creation_success, creation_output):
     """Genera un reporte HTML."""
     template = Template("""
     <html>
@@ -62,16 +64,10 @@ def generate_html_report(hostname, vlan_id, vlan_name, vlan_exists, vlan_output,
             <p>{{ vlan_id }}</p>
             <h2>VLAN Name:</h2>
             <p>{{ vlan_name }}</p>
-            <h2>VLAN Exists:</h2>
-            <p class="status">{{ 'Yes' if vlan_exists else 'No' }}</p>
-            <h2>VLAN Check Output:</h2>
-            <pre>{{ vlan_output }}</pre>
-            {% if not vlan_exists %}
             <h2>VLAN Creation Status:</h2>
             <p class="status">{{ 'Success' if creation_success else 'Failed' }}</p>
             <h2>VLAN Creation Output:</h2>
             <pre>{{ creation_output }}</pre>
-            {% endif %}
             <footer>
                 <p>Report generated on {{ timestamp }}</p>
             </footer>
@@ -82,20 +78,17 @@ def generate_html_report(hostname, vlan_id, vlan_name, vlan_exists, vlan_output,
         hostname=hostname,
         vlan_id=vlan_id,
         vlan_name=vlan_name,
-        vlan_exists=vlan_exists,
-        vlan_output=vlan_output,
         creation_success=creation_success,
         creation_output=creation_output,
         timestamp=datetime.datetime.now()
     )
 
 def main():
-    """Función principal para verificar y crear VLANs."""
-    parser = argparse.ArgumentParser(description="Verifica y crea VLANs en un switch Cisco Catalyst via Telnet.")
+    """Función principal para crear VLANs."""
+    parser = argparse.ArgumentParser(description="Crea una VLAN en un switch Cisco Catalyst via Telnet.")
     parser.add_argument("--host", required=True, help="Dirección IP del switch.")
-    parser.add_argument("--username", required=True, help="Nombre de usuario para la conexión al switch.")
-    parser.add_argument("--password", required=True, help="Contraseña para la conexión al switch.")
-    parser.add_argument("--vlan_id", required=True, type=int, help="ID de la VLAN a verificar/crear.")
+    parser.add_argument("--credentials_file", required=True, help="Archivo de texto con usuario y contraseña (una por línea).")
+    parser.add_argument("--vlan_id", required=True, type=int, help="ID de la VLAN a crear.")
     parser.add_argument("--vlan_name", required=True, help="Nombre de la VLAN a crear.")
     parser.add_argument("--enable_secret", required=False, help="Contraseña para el modo enable (si es necesario).")
     parser.add_argument("--report_file", required=True, help="Nombre del archivo HTML para el reporte.")
@@ -103,17 +96,20 @@ def main():
     args = parser.parse_args()
 
     try:
+        # Leer el nombre de usuario y la contraseña desde el archivo
+        username, password = read_credentials_from_file(args.credentials_file)
+
         print(f"Conectando a {args.host} via Telnet...")
         tn = telnetlib.Telnet(args.host)
 
         tn.read_until(b"Username: ")
         print("Enviando nombre de usuario...")
-        tn.write(args.username.encode('ascii') + b"\n")
+        tn.write(username.encode('ascii') + b"\n")
         time.sleep(0.5)
 
         tn.read_until(b"Password: ")
         print("Enviando contraseña...")
-        tn.write(args.password.encode('ascii') + b"\n")
+        tn.write(password.encode('ascii') + b"\n")
         time.sleep(0.5)
 
         # Si se proporciona un enable secret, intentar entrar en modo enable
@@ -125,23 +121,13 @@ def main():
             tn.write(args.enable_secret.encode('ascii') + b"\n")
             time.sleep(0.5)
 
-        vlan_exists, vlan_output = check_vlan_exists(tn, args.vlan_id)
-
-        if vlan_exists:
-            print(f"VLAN {args.vlan_id} ya existe. No se requiere acción.")
-            creation_success = True
-            creation_output = "VLAN ya existía."
-        else:
-            print(f"VLAN {args.vlan_id} no existe. Procediendo a la creación...")
-            creation_success, creation_output = create_vlan(tn, args.vlan_id, args.vlan_name)
+        creation_success, creation_output = create_vlan(tn, args.vlan_id, args.vlan_name)
 
         # Generar el reporte HTML
         html_report = generate_html_report(
             args.host,
             args.vlan_id,
             args.vlan_name,
-            vlan_exists,
-            vlan_output,
             creation_success,
             creation_output
         )
