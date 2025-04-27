@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calculadora de Nginx Plus</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h1 { color: #333; }
+        form { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="number"] { width: 200px; padding: 5px; margin-bottom: 10px; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        .results { margin-top: 20px; border: 1px solid #ddd; padding: 10px; }
+        .overload { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Calculadora de Procesamiento de Nginx Plus</h1>
+
+    <form method="post">
+        <label for="rps">RPS (Requests Per Second):</label>
+        <input type="number" id="rps" name="rps">
+
+        <label for="tps">TPS (Transactions Per Second):</label>
+        <input type="number" id="tps" name="tps">
+
+        <label for="concurrent_users">Usuarios Concurrentes:</label>
+        <input type="number" id="concurrent_users" name="concurrent_users">
+
+        <label for="ssl_requests">Peticiones SSL:</label>
+        <input type="number" id="ssl_requests" name="ssl_requests">
+
+        <button type="submit">Calcular</button>
+    </form>
+
+    {% if results %}
+    <div class="results">
+        <h2>Resultados:</h2>
+        <p>RPS: {{ results.rps }}</p>
+        <p>TPS: {{ results.tps }}</p>
+        <p>Usuarios Concurrentes: {{ results.concurrent_users }}</p>
+        <p>Peticiones SSL: {{ results.ssl_requests }}</p>
+        <p>Utilización de CPU Estimada: {{ results.estimated_cpu }} (Cores: {{ results.cpu_cores }}, Límite: {{ results.cpu_cores * results.cpu_utilization_limit }})</p>
+        <p>Uso de Memoria Total Estimado: {{ results.total_memory_usage }} GB (Total: {{ results.memory_gb }} GB)</p>
+
+        {% if results.cpu_overload %}
+            <p class="overload">¡Sobrecarga de CPU Detectada!</p>
+        {% endif %}
+
+        {% if results.memory_overload %}
+            <p class="overload">¡Sobrecarga de Memoria Detectada!</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</body>
+</html>
