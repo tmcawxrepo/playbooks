@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Reporte del Sistema - {{ ansible_hostname }}</title>
+  <style>
+    body { font-family: sans-serif; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid black; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+  </style>
+</head>
+<body>
+  <h1>Reporte del Sistema - {{ ansible_hostname }}</h1>
+
+  <h2>Información General</h2>
+  <ul>
+    <li><strong>Hostname:</strong> {{ ansible_hostname }}</li>
+    <li><strong>Sistema Operativo:</strong> {{ ansible_distribution }} {{ ansible_distribution_version }}</li>
+    <li><strong>Arquitectura:</strong> {{ ansible_architecture }}</li>
+    <li><strong>CPU:</strong> {{ ansible_processor | join(', ') }}</li>
+    <li><strong>Memoria Total:</strong> {{ ansible_memtotal_mb }} MB</li>
+  </ul>
+
+  <h2>Información de Discos</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Filesystem</th>
+        <th>Size</th>
+        <th>Used</th>
+        <th>Avail</th>
+        <th>Use%</th>
+        <th>Mounted on</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for line in disk_info.stdout_lines %}
+      {% set parts = line.split(',') %}
+      <tr>
+        <td>{{ parts[0] }}</td>
+        <td>{{ parts[1] }}</td>
+        <td>{{ parts[2] }}</td>
+        <td>{{ parts[3] }}</td>
+        <td>{{ parts[4] }}</td>
+        <td>{{ parts[5] }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Servicios Web</h2>
+  <ul>
+    {% for line in web_services.stdout_lines %}
+      <li>{{ line }}</li>
+    {% endfor %}
+  </ul>
+
+</body>
+</html>
