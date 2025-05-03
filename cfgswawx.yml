@@ -1,0 +1,35 @@
+---
+- name: Creacion de vlan TMC PoC
+  hosts: localhost
+  gather_facts: false
+  vars_prompt:
+    - name: vlan_id
+      prompt: "Ingrese el ID de la VLAN:"
+      private: false
+    - name: vlan_name
+      prompt: "Ingrese el nombre de la VLAN:"
+      private: false
+
+  tasks:
+    - name: Preparar el entorno
+      shell: "rm -f /etc/ansible/playbooks/reporte.html"
+      register: script_output
+
+    - name: Crear archivo config.txt
+      template:
+        src: templates/config.txt.j2
+        dest: /etc/ansible/playbooks/config.txt
+
+    - name: Ejecutar creacion de vlan
+      command: python3 /etc/ansible/playbooks/tlswcfg.py --config_file /etc/ansible/playbooks/config.txt
+      register: script_output
+
+    - name: Generar reporte de ejecucion
+      fetch:
+        src: /etc/ansible/playbooks/reporte.html
+        dest: ./reporte.html
+        flat: yes
+
+    - name: Reporte de generacion
+      debug:
+        msg: "El reporte de creacion de VLAN GENERADO---VALIDAR GENERACION en http://10.9.9.223:7443/reporte.html"
