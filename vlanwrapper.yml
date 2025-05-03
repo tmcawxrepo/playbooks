@@ -1,0 +1,25 @@
+---
+- name: Generar archivo de configuración y ejecutar script de VLAN
+  hosts: localhost
+  gather_facts: false
+  vars_prompt:
+    - name: vlan_id
+      prompt: "Ingrese el ID de la VLAN:"
+      private: false
+    - name: vlan_name
+      prompt: "Ingrese el nombre de la VLAN:"
+      private: false
+
+  tasks:
+    - name: Crear archivo config.txt
+      template:
+        src: /etc/ansible/templates/config.txt.j2
+        dest: /etc/ansible/playbooks/config.txt
+
+    - name: Ejecutar script de creacion de VLAN
+      command: python3 /etc/ansible/playbooks/tlswcfg.py --config_file /etc/ansible/playbooks/config.txt
+      register: script_output
+
+    - name: Imprimir salida del script
+      debug:
+        var: script_output.stdout_lines
