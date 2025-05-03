@@ -1,0 +1,29 @@
+---
+- name: Recopilar información del sistema y generar reporte HTML
+  hosts: all  # Cambiar a un grupo específico si es necesario
+  gather_facts: true
+  become: true # Necesario para obtener información de algunos servicios
+
+  tasks:
+    - name: Obtener información de discos
+      shell: 'df -h | awk ''NR>1 {print $1","$2","$3","$4","$5","$6}'''
+      register: disk_info
+      changed_when: false
+
+    - name: Obtener información de servicios web (Apache y Nginx)
+      shell: |
+        systemctl is-active apache2 2>/dev/null && echo "Apache2: Activo" || echo "Apache2: Inactivo"
+        systemctl is-active nginx 2>/dev/null && echo "Nginx: Activo" || echo "Nginx: Inactivo"
+      register: web_services
+      changed_when: false
+
+    - name: Generar reporte HTML
+      template:
+        src: /etc/ansible/templates/rprtplnxrep.html.j2
+        dest: /etc/ansible/templates/lnxrpt_report.html
+      delegate_to: localhost  # Generar el reporte en la máquina de control
+
+    - name: Imprimir la ruta del reporte
+      debug:
+        msg: "Reporte HTML generado en /etc/ansible/templates/lnxrpt_report.html"
+      
