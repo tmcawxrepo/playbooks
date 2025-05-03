@@ -32,4 +32,4 @@
 
     - name: Reporte de generacion
       debug:
-        msg: "El reporte de creacion de VLAN GENERADO---VALIDAR GENERACION en http://10.9.9.223:7443/reporte.html"
+        msg: "El reporte de creacion de VLAN GENERADO---VALIDAR GENERACION en el ws http://10.9.9.223:7443/reporte.html"
