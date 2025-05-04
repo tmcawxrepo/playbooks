@@ -4,17 +4,11 @@
   gather_facts: false # Opcional: Deshabilita la recopilación de hechos si no es necesaria
 
   tasks:
-    - name: Crear directorio para el archivo de configuración (si no existe)
-      become: true # Ejecutar como usuario con privilegios (ej: root)
-      file:
-        path: /etc/ansible/playbooks
-        state: directory
-        mode: '0755'
-      
+  
     - name: Generar archivo config.txt en el servidor remoto
       become: true
       template:
-        src: config.txt.j2  # Plantilla Jinja2 para config.txt
+        src: /etc/ansible/templates/config.txt.j2  # Plantilla Jinja2 para config.txt
         dest: /etc/ansible/playbooks/config.txt
       vars:
         vlan_id: "{{ vlan_id }}"  # Variables del Survey
@@ -23,6 +17,4 @@
     - name: Ejecutar el playbook de Ansible remoto
       become: true
       command:
-        cmd: ansible-playbook /ruta/al/playbook/a/ejecutar.yml -i /ruta/al/inventario/remoto
-      args:
-        chdir: /home/usuario  # Opcional: Cambiar directorio antes de ejecutar
+        cmd: ansible-playbook /etc/ansible/playbooks/catsw.yml
