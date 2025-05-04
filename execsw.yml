@@ -8,7 +8,7 @@
     - name: Generar archivo config.txt en el servidor remoto
       become: true
       template:
-        src: /etc/ansible/templates/config.txt.j2  # Plantilla Jinja2 para config.txt
+        src: /etc/ansible/templates/configdta.txt.j2 
         dest: /etc/ansible/playbooks/config.txt
       vars:
         vlan_id: "{{ vlan_id }}"  # Variables del Survey
