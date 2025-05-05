@@ -1,23 +1,23 @@
 ---
-- name: Ejecutar Playbook Remoto desde AWX
-  hosts: all
+- name: Crear archivo de configuración en host remoto
+  hosts: all  # Ajusta esto al grupo de hosts en tu inventario
   gather_facts: false
   vars:
-    vlan_id: "{{ lookup('vars', 'vlan_id', default='25') }}"
-    vlan_name: "{{ lookup('vars', 'vlan_name', default='defaul_vlan') }}"
+    vlan_id: "{{ vlan_id | default('666') }}"  # Valor por defecto si el survey falla
+    vlan_name: "{{ vlan_name | default('devil') }}"  # Valor por defecto si el survey falla
 
   tasks:
-    - name: Insertar variables del survey en el archivo config.txt
+    - name: Crear archivo de configuración en host remoto
       become: true
-      blockinfile:
-        path: /etc/ansible/playbooks/config.txt
-        block: |
+      copy:
+        dest: /etc/ansible/playbooks/config.txt
+        content: |
           host=10.9.9.199
           credentials_file=/etc/ansible/playbooks/credentials.txt
           vlan_id={{ vlan_id }}
           vlan_name={{ vlan_name }}
           report_file=/etc/ansible/playbooks/reporte.html
-          enable_secret=
+          enable_secret
 
     - name: Ejecutar el playbook de Ansible remoto
       become: true
