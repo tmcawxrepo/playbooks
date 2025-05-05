@@ -4,12 +4,25 @@
   gather_facts: false
 
   tasks:
+    - name: Crear directorio para el archivo de configuración (si no existe)
+      become: true
+      file:
+        path: /etc/ansible/playbooks
+        state: directory
+        mode: '0755'
+
     - name: Copiar el template config.txt.j2 desde el host remoto
       become: true
       copy:
         src: /etc/ansible/templates/config.txt.j2
         dest: /etc/ansible/playbooks/config.txt.j2
         remote_src: yes
+
+    - name: Generar el archivo config.txt con las variables del survey
+      become: true
+      template:
+        src: /etc/ansible/playbooks/config.txt.j2  # Usamos la copia del template como fuente
+        dest: /etc/ansible/playbooks/config.txt
       vars:
         vlan_id: "{{ vlan_id }}"
         vlan_name: "{{ vlan_name }}"
@@ -18,4 +31,5 @@
       become: true
       command:
         cmd: ansible-playbook /etc/ansible/playbooks/catsw.yml 
+      
       
