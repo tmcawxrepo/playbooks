@@ -4,27 +4,23 @@
   gather_facts: false
 
   tasks:
-    
-    - name: Copiar el template config.txt.j2 desde el host remoto
+    - name: Insertar variables del survey en el archivo config.txt
       become: true
-      copy:
-        src: /etc/ansible/templates/config.txt.j2
-        dest: /etc/ansible/playbooks/config.txt.j2
-        remote_src: yes
-
-    - name: Generar el archivo config.txt con las variables del survey
-      become: true
-      template:
-        src: /etc/ansible/templates/config.txt.j2
-        dest: /etc/ansible/playbooks/config.txt
-      vars:
-        vlan_id: "{{ vlan_id }}"
-        vlan_name: "{{ vlan_name }}"
+      blockinfile:
+        path: /etc/ansible/playbooks/config.txt
+        block: |
+          host=10.9.9.199
+          credentials_file=/etc/ansible/playbooks/credentials.txt
+          vlan_id={{ vlan_id }}
+          vlan_name={{ vlan_name }}
+          report_file=/etc/ansible/playbooks/reporte.html
+          enable_secret=
 
     - name: Ejecutar el playbook de Ansible remoto
       become: true
       command:
         cmd: ansible-playbook /etc/ansible/playbooks/catsw.yml
+      
       
          
       
