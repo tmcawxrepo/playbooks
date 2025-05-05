@@ -1,20 +1,21 @@
 ---
 - name: Ejecutar Playbook Remoto desde AWX
-  hosts: all # Asegúrate de que este grupo incluya la máquina Linux de destino
-  gather_facts: false # Opcional: Deshabilita la recopilación de hechos si no es necesaria
+  hosts: all
+  gather_facts: false
 
   tasks:
-  
-    - name: Generar archivo config.txt en el servidor remoto
+    - name: Copiar el template config.txt.j2 desde el host remoto
       become: true
-      template:
-        src: /etc/ansible/templates/configdta.txt.j2 
-        dest: /etc/ansible/playbooks/config.txt
+      copy:
+        src: /etc/ansible/templates/config.txt.j2
+        dest: /etc/ansible/playbooks/config.txt.j2
+        remote_src: yes
       vars:
-        vlan_id: "{{ vlan_id }}"  # Variables del Survey
+        vlan_id: "{{ vlan_id }}"
         vlan_name: "{{ vlan_name }}"
 
     - name: Ejecutar el playbook de Ansible remoto
       become: true
       command:
         cmd: ansible-playbook /etc/ansible/playbooks/catsw.yml 
+      
