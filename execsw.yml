@@ -8,8 +8,8 @@
     - name: Generar el archivo config.txt con las variables del survey base
       become: true
       template:
-        src: /etc/ansible/playbooks/config.txt.j2  
-        dest: /etc/ansible/playbooks/config.txt
+        src: /etc/ansible/templates/config.txt.j2  
+        dest: /etc/ansible/playbooks/configrm.txt
         remote_src: yes
       vars:
         vlan_id: "{{ vlan_id }}"
