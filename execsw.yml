@@ -2,6 +2,9 @@
 - name: Ejecutar Playbook Remoto desde AWX
   hosts: all
   gather_facts: false
+  vars:
+    vlan_id: "{{ vlan_id | default('') }}"
+    vlan_name: "{{ vlan_name | default('') }}"
 
   tasks:
     - name: Insertar variables del survey en el archivo config.txt
@@ -20,7 +23,7 @@
       become: true
       command:
         cmd: ansible-playbook /etc/ansible/playbooks/catsw.yml
-      
+          
       
          
       
