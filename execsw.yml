@@ -1,10 +1,12 @@
 ---
 - name: Crear archivo de configuración en host remoto
-  hosts: all  # Ajusta esto al grupo de hosts en tu inventario
+  hosts: all
   gather_facts: false
+
   vars:
-    vlan_id: "{{ vlan_id | default('666') }}"  # Valor por defecto si el survey falla
-    vlan_name: "{{ vlan_name | default('devil') }}"  # Valor por defecto si el survey falla
+    vlan_id: "{{ vlan_id | default('666') }}"   # Obtiene vlan_id de AWX o usa '666'
+    vlan_name: "{{ vlan_name | default('devil') }}" # Obtiene vlan_name de AWX o usa 'devil'
+    remote_host: "10.9.9.199"                       # Define el host remoto
 
   tasks:
     - name: Crear archivo de configuración en host remoto
@@ -12,7 +14,7 @@
       copy:
         dest: /etc/ansible/playbooks/config.txt
         content: |
-          host=10.9.9.199
+          host={{ remote_host }}
           credentials_file=/etc/ansible/playbooks/credentials.txt
           vlan_id={{ vlan_id }}
           vlan_name={{ vlan_name }}
