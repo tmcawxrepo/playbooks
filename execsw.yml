@@ -5,7 +5,7 @@
 
   tasks:
     
-    - name: Generar el archivo config.txt con las variables del survey
+    - name: Generar el archivo config.txt con las variables del survey base
       become: true
       template:
         src: /etc/ansible/playbooks/config.txt.j2  
