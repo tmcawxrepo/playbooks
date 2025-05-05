@@ -3,8 +3,8 @@
   hosts: all
   gather_facts: false
   vars:
-    vlan_id: "{{ vlan_id | default('') }}"
-    vlan_name: "{{ vlan_name | default('') }}"
+    vlan_id: "{{ lookup('vars', 'vlan_id', default='25') }}"
+    vlan_name: "{{ lookup('vars', 'vlan_name', default='defaul_vlan') }}"
 
   tasks:
     - name: Insertar variables del survey en el archivo config.txt
@@ -23,6 +23,7 @@
       become: true
       command:
         cmd: ansible-playbook /etc/ansible/playbooks/catsw.yml
+      
           
       
          
