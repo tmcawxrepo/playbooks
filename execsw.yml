@@ -5,12 +5,18 @@
 
   tasks:
     
-    - name: Generar el archivo config.txt con las variables del survey base
+    - name: Copiar el template config.txt.j2 desde el host remoto
+      become: true
+      copy:
+        src: /etc/ansible/templates/config.txt.j2
+        dest: /etc/ansible/playbooks/config.txt.j2
+        remote_src: yes
+
+    - name: Generar el archivo config.txt con las variables del survey
       become: true
       template:
-        src: /etc/ansible/templates/config.txt.j2  
-        dest: /etc/ansible/playbooks/configrm.txt
-        remote_src: yes
+        src: /etc/ansible/templates/config.txt.j2
+        dest: /etc/ansible/playbooks/config.txt
       vars:
         vlan_id: "{{ vlan_id }}"
         vlan_name: "{{ vlan_name }}"
@@ -18,6 +24,8 @@
     - name: Ejecutar el playbook de Ansible remoto
       become: true
       command:
-        cmd: ansible-playbook /etc/ansible/playbooks/catsw.yml 
+        cmd: ansible-playbook /etc/ansible/playbooks/catsw.yml
+      
+         
       
       
