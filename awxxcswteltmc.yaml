@@ -7,7 +7,7 @@
     vlan_id: "{{ vlan_id | default('666') }}"   # Obtiene vlan_id de AWX o usa '666'
     vlan_name: "{{ vlan_name | default('devil') }}" # Obtiene vlan_name de AWX o usa 'devil'
     remote_host: "10.9.9.199"                       # Define el host remoto
-    report_file: "report_file | default('/etc/ansible/playbooks/vlan_report.html')"
+    report_file: "{{ report_file | default('/etc/ansible/playbooks/vlan_report.html') }}"
 
   tasks:
     - name: Crear archivo de configuración en host remoto
