@@ -12,7 +12,7 @@
     - name: Crear archivo de configuración en host remoto
       become: true
       copy:
-        dest: /etc/ansible/playbooks/config.txt
+        dest: /etc/ansible/playbooks/configapi.txt
         content: |
           host={{ remote_host }}
           credentials_file=/etc/ansible/playbooks/credentials.txt
