@@ -1,0 +1,15 @@
+---
+- name: TMC TOMA DE INVENTARIO HOST LINUX
+  hosts: all
+  gather_facts: false
+   
+  tasks:
+    
+    - name: Ejecucion toma de inventario Linux Host TMC
+      become: true
+      command:
+        cmd: ansible-playbook /etc/ansible/playbooks/lnxinvrp.yml
+    
+    - name: Generacion de reporte de inventario Linux Host TMC
+      debug:
+        msg: "El reporte de inventario linux host---VALIDAR GENERACION en http://10.9.9.223:7443"
