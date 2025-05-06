@@ -1,0 +1,25 @@
+---
+- name: TMC VERIFICACION PARAMETROS DE SEGURIDAD DE URL TMC
+  hosts: all
+  gather_facts: false
+
+  vars:
+    hostnames: "{{ hostnames | default('tmc.com.co') }}" 
+                          
+    
+  tasks:
+    - name: Preparacion de archivo archivo de validacion URL TMC
+      become: true
+      copy:
+        dest: /etc/ansible/playbooks/hostnames.txt
+        content: |
+         {{ hostnames }}
+          
+    - name: Ejecucion de validacion Linea base de seguridad TMC
+      become: true
+      command:
+        cmd: ansible-playbook /etc/ansible/playbooks/lbsec.yml
+    
+    - name: Generacion de reporte de reporte linea base de seguridad TMC
+      debug:
+        msg: "El reporte validacion url GENERADO---VALIDAR GENERACION en http://10.9.9.223:9443"
