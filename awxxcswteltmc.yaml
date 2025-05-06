@@ -1,5 +1,5 @@
 ---
-- name: Crear archivo de configuración en host remoto
+- name: TMC CREACION DE VLAN CAT CISCO
   hosts: all
   gather_facts: false
 
@@ -9,7 +9,7 @@
     remote_host: "10.9.9.199"                       # Define el host remoto
     
   tasks:
-    - name: Crear archivo de configuración en host remoto
+    - name: Preparacion de archivo de configuracion Switch Acceso TMC
       become: true
       copy:
         dest: /etc/ansible/playbooks/configapi.txt
@@ -21,7 +21,11 @@
           vlan_name={{ vlan_name }}
           enable_secret=
 
-    - name: Ejecutar el playbook de Ansible remoto
+    - name: Ejecucion de configuracion switch acceso TMC
       become: true
       command:
         cmd: ansible-playbook /etc/ansible/playbooks/catsw.yml
+    
+    - name: Generacion de reporte de ejecucion switch acceso TMC
+      debug:
+        msg: "El reporte de creacion de VLAN GENERADO---VALIDAR GENERACION en http://10.9.9.223:8443/vlan_report.html"
